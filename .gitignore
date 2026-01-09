@@ -1,0 +1,46 @@
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Node / frontend
+node_modules/
+dist/
+build/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Env files
+.env
+.env.*
+
+# IDE / editor
+.vscode/
+.idea/
+*.iml
+
+# Logs / runtime
+*.log
+*.pid
+*.sock
+
+# SQLite DBs
+*.db
+*.sqlite
+*.sqlite3
+
+# Kubernetes artifacts
+*.kubeconfig
+kubeconfig

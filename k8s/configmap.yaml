@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agentic-sre-config
+  namespace: agentic-sre
+data:
+  REDIS_URL: "redis://redis:6379/0"
+  SQLITE_PATH: "/data/incidents.db"
+  LLM_PROVIDER: "mock"
+  LLM_MAX_TOKENS: "512"
+  LLM_TEMPERATURE: "0.2"

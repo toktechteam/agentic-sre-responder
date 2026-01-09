@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentic-sre-redis
+  namespace: agentic-sre
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agentic-sre-redis
+  template:
+    metadata:
+      labels:
+        app: agentic-sre-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7.2-alpine
+          ports:
+            - containerPort: 6379

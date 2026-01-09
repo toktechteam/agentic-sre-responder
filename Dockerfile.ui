@@ -1,0 +1,23 @@
+# ---------- Build stage ----------
+FROM node:20-alpine AS build
+WORKDIR /app
+
+# Copy only dependency files first (better caching)
+COPY ui/package.json ui/package-lock.json* ./
+
+# Install deps (npm ci if lock exists, fallback to npm install)
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+# Copy the full UI source
+COPY ui/ ./
+
+# Build the Vite app
+RUN npm run build
+
+
+# ---------- Runtime stage ----------
+FROM nginx:1.27-alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY ui/nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+

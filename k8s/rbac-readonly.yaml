@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: agentic-sre-api
+  namespace: agentic-sre
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: agentic-sre-readonly
+rules:
+  - apiGroups: ["", "apps", "autoscaling", "events.k8s.io"]
+    resources: ["pods", "pods/log", "events", "deployments", "replicasets", "nodes", "namespaces", "horizontalpodautoscalers"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: agentic-sre-readonly-binding
+subjects:
+  - kind: ServiceAccount
+    name: agentic-sre-api
+    namespace: agentic-sre
+roleRef:
+  kind: ClusterRole
+  name: agentic-sre-readonly
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentic-sre-ui
+  namespace: agentic-sre
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agentic-sre-ui
+  template:
+    metadata:
+      labels:
+        app: agentic-sre-ui
+    spec:
+      containers:
+        - name: ui
+          image: agentic-sre-ui:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          env:
+            - name: VITE_API_BASE
+              value: "http://localhost:30080"

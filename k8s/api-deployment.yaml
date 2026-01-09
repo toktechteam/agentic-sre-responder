@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentic-sre-api
+  namespace: agentic-sre
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agentic-sre-api
+  template:
+    metadata:
+      labels:
+        app: agentic-sre-api
+    spec:
+      serviceAccountName: agentic-sre-api
+      containers:
+        - name: api
+          image: agentic-sre-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: agentic-sre-config
+            - secretRef:
+                name: agentic-sre-secrets
+          volumeMounts:
+            - name: sqlite-data
+              mountPath: /data
+      volumes:
+        - name: sqlite-data
+          emptyDir: {}
