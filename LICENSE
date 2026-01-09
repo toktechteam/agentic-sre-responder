@@ -1,6 +1,84 @@
-MIT License
+# LICENSE
 
-Copyright (c) 2025 toktechteam
+This repository contains materials from the **AI Agents for DevOps** lab series.
+
+Copyright © 2024 TokTechTeam. All rights reserved.
+
+---
+
+## Dual License Structure
+
+This repository uses a **dual license** approach:
+
+1. **Educational Content** (Documentation, explanations, tutorials) → CC BY-NC 4.0
+2. **Code Examples** (Scripts, configurations, implementations) → MIT License
+
+---
+
+## Part 1: Educational Content License
+
+### Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)
+
+**Applies to:**
+- All markdown files (*.md)
+- Documentation and written tutorials
+- Diagrams and illustrations
+- Lab instructions and explanations
+- eBook-related content
+
+**License Terms:**
+
+[![CC BY-NC 4.0](https://licensebuttons.net/l/by-nc/4.0/88x31.png)](http://creativecommons.org/licenses/by-nc/4.0/)
+
+You are free to:
+- **Share** — copy and redistribute the material in any medium or format
+- **Adapt** — remix, transform, and build upon the material
+
+Under the following terms:
+- **Attribution** — You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
+- **NonCommercial** — You may not use the material for commercial purposes.
+- **No additional restrictions** — You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.
+
+**What this means:**
+- ✅ You can use these materials for personal learning
+- ✅ You can share them with others for educational purposes
+- ✅ You can modify and adapt them for your own learning
+- ✅ You must provide attribution to TokTechTeam
+- ✅ You must link back to the original eBook
+- ❌ You cannot use this for commercial training or courses
+- ❌ You cannot republish this as your own educational product
+- ❌ You cannot remove copyright notices
+
+**Attribution Requirements:**
+
+When sharing or adapting this content, please include:
+```
+Original content from "AI Agents for DevOps" by TokTechTeam
+Available at: https://theopskart.gumroad.com/l/AIAgentsforDevOps
+Licensed under CC BY-NC 4.0
+```
+
+**Commercial Use:**
+
+If you wish to use this content for commercial purposes (corporate training, paid courses, commercial publications), please contact us for a commercial license:
+- Email: [theopskart@gmail.com,toktechteam@gmail.com]
+- Website: https://github.com/toktechteam/ai_agents_for_devops
+
+Full license text: https://creativecommons.org/licenses/by-nc/4.0/legalcode
+
+---
+
+## Part 2: Code License
+
+### MIT License
+
+**Applies to:**
+- All source code files (*.py, *.js, *.sh, etc.)
+- Configuration files (docker-compose.yml, Dockerfile, etc.)
+- Scripts and automation
+- Code examples and implementations
+
+**License Terms:**
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +97,65 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+**What this means:**
+- ✅ You can use the code in personal projects
+- ✅ You can use the code in commercial projects
+- ✅ You can modify and distribute the code
+- ✅ No attribution required (but appreciated)
+- ✅ No warranty or liability
+
+---
+
+## Questions and Clarifications
+
+### Can I use this lab in my company for learning?
+**Yes**, employees can use it for personal/professional development. However, you cannot:
+- Package it as a commercial training course
+- Charge others to access this content
+- Republish it as your company's training material
+
+### Can I use the code in my production systems?
+**Yes**, all code is MIT licensed. You can use, modify, and deploy it in production without restrictions.
+
+### Can I fork this repo and make changes?
+**Yes**, as long as you:
+- Maintain the original license notices
+- Provide attribution to the original author
+- Don't use it for commercial purposes (unless it's just the code portions)
+
+### Can I translate this content?
+**Yes**, translations are considered adaptations and are allowed under CC BY-NC 4.0. Please:
+- Maintain attribution
+- Indicate it's a translation
+- Keep the same license
+
+### Can I create a video tutorial based on this?
+**Yes**, for non-commercial educational purposes. Please:
+- Credit the original source
+- Link to the eBook
+- Do not monetize the video content
+
+---
+
+## Summary
+
+| What | License | Commercial Use |
+|------|---------|----------------|
+| Documentation & Tutorials | CC BY-NC 4.0 | ❌ No |
+| Code & Scripts | MIT | ✅ Yes |
+| Personal Learning | Both | ✅ Yes |
+| Sharing for Education | Both | ✅ Yes |
+
+---
+
+## Contact
+
+For questions, commercial licensing, or permissions:
+- GitHub: https://github.com/toktechteam/ai_agents_for_devops
+- Email: theopskart@gmail.com,toktechteam@gmail.com
+- eBook: https://theopskart.gumroad.com/l/AIAgentsforDevOps
+
+---
+
+**Last Updated:** January 2026
