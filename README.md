@@ -21,6 +21,8 @@ agentic-sre-responder orchestrates multiple read-only agents that perform staged
 - Agents collect evidence from Kubernetes and deployment metadata.
 - Orchestration stages provide a measurable, auditable timeline and MTTR proxies.
 
+![arch. diagram](agentic-sre-responder.png)
+
 Agents are strictly read-only to ensure safe operation in regulated environments and to avoid automated changes in production systems.
 
 ## Key Capabilities
