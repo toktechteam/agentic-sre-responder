@@ -11,7 +11,6 @@ from app.agents.k8s_investigator import k8s_investigation
 from app.agents.remediation_advisor import recommend_actions
 from app.agents.triage import triage_alert
 from app.integrations.slack import SlackClient
-from app.results import InvestigationResult, RecommendationResult, TriageResult
 from app.logging_config import get_logger
 from app.models import (
     IncidentReport,
@@ -51,11 +50,40 @@ class Orchestrator:
             created_at=created_at,
             updated_at=created_at,
             raw_alert=payload,
-            timeline=[TimelineEvent(stage="ingestion", status="completed", timestamp=created_at)],
+            timeline=[
+                TimelineEvent(
+                    stage="ingestion",
+                    status="completed",
+                    timestamp=created_at,
+                )
+            ],
         )
 
         await self.store.save_incident_report(report)
-        background_tasks.add_task(self._run_pipeline, report, source)
+        background_tasks.add_task(self._run_pipeline, report)
+        return report
+
+    async def analyze_incident(
+        self,
+        incident_id: str,
+        refresh_evidence: bool = False,
+    ) -> IncidentReport:
+        report = await self.store.get_incident_report(incident_id)
+        if not report:
+            raise ValueError("incident_not_found")
+
+        if refresh_evidence:
+            report = await self._investigate(report)
+
+        report = await self._analyze(report)
+        report = await self._recommend(report)
+        report = await self._validate(report)
+
+        logger.info(
+            "manual_analysis_complete",
+            extra={"incident_id": report.incident_id},
+        )
+
         return report
 
     async def handle_demo_alert(
@@ -77,30 +105,40 @@ class Orchestrator:
         }
         return await self.handle_alert(payload, "demo", correlation_id, background_tasks)
 
-    async def _run_pipeline(self, report: IncidentReport, source: str) -> None:
+    async def _run_pipeline(self, report: IncidentReport) -> None:
         try:
-            updated = await self._triage(report)
-            updated = await self._investigate(updated)
-            updated = await self._analyze(updated)
-            updated = await self._recommend(updated)
-            updated = await self._validate(updated)
-            logger.info("pipeline_complete", extra={"incident_id": updated.incident_id})
+            report = await self._triage(report)
+            report = await self._investigate(report)
+            report = await self._analyze(report)
+            report = await self._recommend(report)
+            report = await self._validate(report)
+
+            logger.info(
+                "pipeline_complete",
+                extra={"incident_id": report.incident_id},
+            )
         except Exception as exc:
-            logger.exception("pipeline_failed", extra={"incident_id": report.incident_id, "error": str(exc)})
+            logger.exception(
+                "pipeline_failed",
+                extra={"incident_id": report.incident_id, "error": str(exc)},
+            )
 
     async def _triage(self, report: IncidentReport) -> IncidentReport:
         stage = StageTiming(stage="triage", started_at=now_utc())
         report.stage_timings.append(stage)
-        report.timeline.append(TimelineEvent(stage="triage", status="started", timestamp=stage.started_at))
+        report.timeline.append(
+            TimelineEvent(stage="triage", status="started", timestamp=stage.started_at)
+        )
 
-        triage_result = await triage_alert(report)
-
+        result = await triage_alert(report)
+        report.evidence.extend(result.evidence)
         report.status = "investigating"
-        report.evidence.extend(triage_result.evidence)
         report.updated_at = now_utc()
 
         stage.completed_at = report.updated_at
-        report.timeline.append(TimelineEvent(stage="triage", status="completed", timestamp=report.updated_at))
+        report.timeline.append(
+            TimelineEvent(stage="triage", status="completed", timestamp=report.updated_at)
+        )
 
         await self.store.save_incident_report(report)
         await self.slack.notify_incident_created(report)
@@ -109,7 +147,9 @@ class Orchestrator:
     async def _investigate(self, report: IncidentReport) -> IncidentReport:
         stage = StageTiming(stage="investigation", started_at=now_utc())
         report.stage_timings.append(stage)
-        report.timeline.append(TimelineEvent(stage="investigation", status="started", timestamp=stage.started_at))
+        report.timeline.append(
+            TimelineEvent(stage="investigation", status="started", timestamp=stage.started_at)
+        )
 
         k8s_task = asyncio.create_task(k8s_investigation(report))
         deploy_task = asyncio.create_task(deploy_investigation(report))
@@ -121,7 +161,9 @@ class Orchestrator:
 
         report.updated_at = now_utc()
         stage.completed_at = report.updated_at
-        report.timeline.append(TimelineEvent(stage="investigation", status="completed", timestamp=report.updated_at))
+        report.timeline.append(
+            TimelineEvent(stage="investigation", status="completed", timestamp=report.updated_at)
+        )
 
         await self.store.save_incident_report(report)
         return report
@@ -129,13 +171,17 @@ class Orchestrator:
     async def _analyze(self, report: IncidentReport) -> IncidentReport:
         stage = StageTiming(stage="analysis", started_at=now_utc())
         report.stage_timings.append(stage)
-        report.timeline.append(TimelineEvent(stage="analysis", status="started", timestamp=stage.started_at))
+        report.timeline.append(
+            TimelineEvent(stage="analysis", status="started", timestamp=stage.started_at)
+        )
 
         report.root_cause_hypotheses = _derive_hypotheses(report.evidence)
         report.updated_at = now_utc()
 
         stage.completed_at = report.updated_at
-        report.timeline.append(TimelineEvent(stage="analysis", status="completed", timestamp=report.updated_at))
+        report.timeline.append(
+            TimelineEvent(stage="analysis", status="completed", timestamp=report.updated_at)
+        )
 
         await self.store.save_incident_report(report)
         return report
@@ -143,16 +189,22 @@ class Orchestrator:
     async def _recommend(self, report: IncidentReport) -> IncidentReport:
         stage = StageTiming(stage="recommendation", started_at=now_utc())
         report.stage_timings.append(stage)
-        report.timeline.append(TimelineEvent(stage="recommendation", status="started", timestamp=stage.started_at))
+        report.timeline.append(
+            TimelineEvent(stage="recommendation", status="started", timestamp=stage.started_at)
+        )
 
         recommendation = await recommend_actions(report)
         report.recommended_actions = recommendation.recommended_actions
-        report.root_cause_hypotheses = recommendation.root_cause_hypotheses or report.root_cause_hypotheses
+        report.root_cause_hypotheses = (
+            recommendation.root_cause_hypotheses or report.root_cause_hypotheses
+        )
         report.status = "recommended"
         report.updated_at = now_utc()
 
         stage.completed_at = report.updated_at
-        report.timeline.append(TimelineEvent(stage="recommendation", status="completed", timestamp=report.updated_at))
+        report.timeline.append(
+            TimelineEvent(stage="recommendation", status="completed", timestamp=report.updated_at)
+        )
 
         await self.store.save_incident_report(report)
         await self.slack.notify_recommendation_ready(report)
@@ -161,18 +213,26 @@ class Orchestrator:
     async def _validate(self, report: IncidentReport) -> IncidentReport:
         stage = StageTiming(stage="validation", started_at=now_utc())
         report.stage_timings.append(stage)
-        report.timeline.append(TimelineEvent(stage="validation", status="started", timestamp=stage.started_at))
+        report.timeline.append(
+            TimelineEvent(stage="validation", status="started", timestamp=stage.started_at)
+        )
 
         if not report.recommended_actions:
             report.recommended_actions.append(
-                RecommendedAction(action="Run kubectl get events to confirm status", risk="low", confidence=0.4)
+                RecommendedAction(
+                    action="Run kubectl get events to confirm status",
+                    risk="low",
+                    confidence=0.4,
+                )
             )
 
         report.status = "validated"
         report.updated_at = now_utc()
 
         stage.completed_at = report.updated_at
-        report.timeline.append(TimelineEvent(stage="validation", status="completed", timestamp=report.updated_at))
+        report.timeline.append(
+            TimelineEvent(stage="validation", status="completed", timestamp=report.updated_at)
+        )
 
         await self.store.save_incident_report(report)
         await self.slack.notify_validation_complete(report)
@@ -183,10 +243,25 @@ def _derive_hypotheses(evidence) -> list[RootCauseHypothesis]:
     hypotheses: list[RootCauseHypothesis] = []
     for item in evidence:
         if "CrashLoopBackOff" in item.detail:
-            hypotheses.append(RootCauseHypothesis(hypothesis="Pod crash loops detected", confidence=0.6))
+            hypotheses.append(
+                RootCauseHypothesis(
+                    hypothesis="Pod crash loops detected",
+                    confidence=0.6,
+                )
+            )
         if "ImagePullBackOff" in item.detail:
-            hypotheses.append(RootCauseHypothesis(hypothesis="Image pull failures", confidence=0.5))
+            hypotheses.append(
+                RootCauseHypothesis(
+                    hypothesis="Image pull failures",
+                    confidence=0.5,
+                )
+            )
     if not hypotheses:
-        hypotheses.append(RootCauseHypothesis(hypothesis="Investigate recent changes in workload", confidence=0.3))
+        hypotheses.append(
+            RootCauseHypothesis(
+                hypothesis="Investigate recent changes in workload",
+                confidence=0.3,
+            )
+        )
     return hypotheses
 

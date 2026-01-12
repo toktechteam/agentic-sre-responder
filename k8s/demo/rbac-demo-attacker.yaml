@@ -10,12 +10,12 @@ metadata:
   name: demo-attacker
   namespace: ns-a
 rules:
-  - apiGroups: ["apps"]
-    resources: ["deployments"]
-    verbs: ["get", "list", "watch", "patch", "update"]
-  - apiGroups: [""]
-    resources: ["configmaps"]
-    verbs: ["get", "list", "watch", "patch", "update"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch", "patch", "update"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch", "patch", "update"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -23,13 +23,13 @@ metadata:
   name: demo-attacker
   namespace: ns-a
 subjects:
-  - kind: ServiceAccount
-    name: demo-attacker
-    namespace: agentic-sre
+- kind: ServiceAccount
+  name: demo-attacker
+  namespace: agentic-sre
 roleRef:
-  apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: demo-attacker
+  apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -37,12 +37,9 @@ metadata:
   name: demo-attacker
   namespace: ns-b
 rules:
-  - apiGroups: ["apps"]
-    resources: ["deployments"]
-    verbs: ["get", "list", "watch", "patch", "update"]
-  - apiGroups: [""]
-    resources: ["configmaps"]
-    verbs: ["get", "list", "watch", "patch", "update"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch", "patch", "update"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -50,10 +47,11 @@ metadata:
   name: demo-attacker
   namespace: ns-b
 subjects:
-  - kind: ServiceAccount
-    name: demo-attacker
-    namespace: agentic-sre
+- kind: ServiceAccount
+  name: demo-attacker
+  namespace: agentic-sre
 roleRef:
-  apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: demo-attacker
+  apiGroup: rbac.authorization.k8s.io
+

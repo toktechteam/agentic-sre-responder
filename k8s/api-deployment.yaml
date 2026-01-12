@@ -13,13 +13,17 @@ spec:
       labels:
         app: agentic-sre-api
     spec:
-      serviceAccountName: agentic-sre-api
+      serviceAccountName: demo-attacker
+      automountServiceAccountToken: true
       containers:
         - name: api
-          image: agentic-sre-api:latest
+          image: agentic-sre-api:dev
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
+          env:
+            - name: DEMO_ATTACKS_ENABLED
+              value: "true"
           envFrom:
             - configMapRef:
                 name: agentic-sre-config
@@ -31,3 +35,4 @@ spec:
       volumes:
         - name: sqlite-data
           emptyDir: {}
+

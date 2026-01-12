@@ -70,31 +70,16 @@ def _load_cluster_config() -> None:
 
 
 def _build_demo_attacker_client() -> client.ApiClient:
-    token_path = os.environ.get("DEMO_ATTACKER_TOKEN_PATH")
-    kubeconfig_path = os.environ.get("DEMO_ATTACKER_KUBECONFIG")
-    if token_path:
-        token_file = Path(token_path)
-        if not token_file.exists():
-            raise HTTPException(status_code=503, detail="demo_attacker_token_missing")
-        token = token_file.read_text().strip()
-        if not token:
-            raise HTTPException(status_code=503, detail="demo_attacker_token_empty")
-        host = os.environ.get("KUBERNETES_SERVICE_HOST")
-        port = os.environ.get("KUBERNETES_SERVICE_PORT")
-        if not host or not port:
-            raise HTTPException(status_code=503, detail="demo_attacker_cluster_env_missing")
-        configuration = client.Configuration()
-        configuration.host = f"https://{host}:{port}"
-        configuration.verify_ssl = True
-        ca_path = os.environ.get("DEMO_ATTACKER_CA_PATH", "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
-        if os.path.exists(ca_path):
-            configuration.ssl_ca_cert = ca_path
-        configuration.api_key = {"authorization": f"Bearer {token}"}
-        return client.ApiClient(configuration)
-    if kubeconfig_path:
-        config.load_kube_config(config_file=kubeconfig_path)
+    try:
+        # Use ServiceAccount injected by Kubernetes
+        config.load_incluster_config()
         return client.ApiClient()
-    raise HTTPException(status_code=503, detail="demo_attacker_credentials_not_configured")
+    except Exception as exc:
+        logger.exception("incluster_config_failed", extra={"error": str(exc)})
+        raise HTTPException(
+            status_code=503,
+            detail="incluster_kubernetes_auth_failed"
+        ) from exc
 
 
 @app.get("/healthz")
@@ -265,6 +250,19 @@ async def get_incident(incident_id: str, store: Store = Depends(get_store)) -> I
         raise HTTPException(status_code=404, detail="not_found")
     return report
 
+@app.post("/incidents/{incident_id}/analyze", response_model=IncidentReport)
+async def analyze_incident(
+    incident_id: str,
+    refresh_evidence: bool = False,
+    orchestrator: Orchestrator = Depends(get_orchestrator),
+):
+    try:
+        return await orchestrator.analyze_incident(
+            incident_id=incident_id,
+            refresh_evidence=refresh_evidence,
+        )
+    except ValueError:
+        raise HTTPException(status_code=404, detail="incident_not_found")
 
 @app.post("/slack/ack")
 async def slack_ack(request: Request) -> JSONResponse:

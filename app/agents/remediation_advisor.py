@@ -15,9 +15,35 @@ logger = get_logger(__name__)
 
 async def recommend_actions(report: IncidentReport) -> RecommendationResult:
     provider = _get_provider()
-    response = await provider.generate_recommendations(report)
 
+    # 🔹 CRITICAL: log which LLM is actually being used
+    logger.info(
+        "llm_provider_selected",
+        extra={
+            "provider": provider.__class__.__name__,
+            "incident_id": report.incident_id,
+        },
+    )
+
+    try:
+        response = await provider.generate_recommendations(report)
+    except Exception as exc:
+        logger.exception(
+            "llm_provider_failed",
+            extra={
+                "provider": provider.__class__.__name__,
+                "incident_id": report.incident_id,
+                "error": str(exc),
+            },
+        )
+        response = None
+
+    # 🔹 SAFE fallback (never breaks demo)
     if response is None:
+        logger.warning(
+            "llm_fallback_used",
+            extra={"incident_id": report.incident_id},
+        )
         fallback_actions = [
             RecommendedAction(
                 action="Review recent deployment changes and check pod events for failures",
@@ -32,9 +58,13 @@ async def recommend_actions(report: IncidentReport) -> RecommendationResult:
 
 def _get_provider() -> LLMProvider:
     provider = os.environ.get("LLM_PROVIDER", "mock").lower()
+
     if provider == "openai":
         return OpenAIProvider()
+
     if provider == "bedrock":
         return BedrockProvider()
+
+    # default + safety net
     return MockProvider()
 
