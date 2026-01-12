@@ -34,6 +34,8 @@ Agents are strictly read-only to ensure safe operation in regulated environments
 - Slack integration for incident notifications
 - Cloud-neutral, platform-agnostic design
 
+![working-asr](images/agentic-sre-responder-deployed.png)
+
 ## Demo Scenarios
 
 - CrashLoopBackOff: breaks a required env var for a demo app to force restarts
@@ -81,6 +83,10 @@ The dashboard shows workload health, evidence grouped by source, incident timeli
 - Not a chatbot
 - Not auto-remediation
 - Agentic, evidence-first, infrastructure-aware design
+
+![Incident-Trigger](<images/Incident Created.png>)
+![Recommanded-action](<images/Recommanded action.png>)
+![Validation](images/Validation-complete.png)
 
 ## Who This Is For
 
